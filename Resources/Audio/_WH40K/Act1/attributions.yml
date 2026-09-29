@@ -1,8 +1,8 @@
 - files: ["Null.ogg"]
   license: "Custom"
   copyright: "Provided by HeretekRT project author"
-  source: "Project-provided asset"
+  source: "https://github.com/LemonKaiser/HeretekRT"
 - files: ["glass-shatter.ogg"]
   license: "Custom"
   copyright: "Provided by HeretekRT project author"
-  source: "Project-provided asset"
+  source: "https://github.com/LemonKaiser/HeretekRT"
