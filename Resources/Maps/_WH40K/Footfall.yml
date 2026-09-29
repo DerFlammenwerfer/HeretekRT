@@ -1,11 +1,11 @@
 meta:
   format: 7
   category: Map
-  engineVersion: 277.0.0
-  forkId: ebengrad
-  forkVersion: ca03bd9ed5dc137f03dd16ad774c428438692b0a
-  time: 08/31/2026 07:10:46
-  entityCount: 24226
+  engineVersion: 279.0.1
+  forkId: ""
+  forkVersion: ""
+  time: 09/29/2026 13:45:28
+  entityCount: 24236
 maps:
 - 1
 grids:
@@ -94,7 +94,7 @@ entities:
     - type: StationTransit
     - type: IFF
       readOnly: True
-      address: ' 66A1-ED38'
+      address: ' 2E8F-FB71'
     - type: ProtectedGrid
       hostileMobKillSound: !type:SoundPathSpecifier
         path: /Audio/Effects/holy.ogg
@@ -465,9 +465,9 @@ entities:
     - type: ThermalSignature
     - type: SpreaderGrid
       spreadQueues:
+        Kudzu: []
         Smoke: []
         Puddle: []
-        Kudzu: []
         MetalFoam: []
     - type: Shuttle
       dampingModifier: 0.25
@@ -14715,7 +14715,7 @@ entities:
       pos: 32.5,-9.5
       parent: 2
     - type: Door
-      secondsUntilStateChange: -79669.65
+      secondsUntilStateChange: -79866.49
       state: Opening
     - type: DeviceLinkSource
       lastSignals:
@@ -65573,13 +65573,6 @@ entities:
     - type: Transform
       pos: 64.5,-10.5
       parent: 2
-- proto: ChemistryHotplate
-  entities:
-  - uid: 10158
-    components:
-    - type: Transform
-      pos: 6.5,-4.5
-      parent: 2
 - proto: ChemMasterFilled
   entities:
   - uid: 10159
@@ -76055,6 +76048,13 @@ entities:
     components:
     - type: Transform
       pos: -39.505676,-45.241276
+      parent: 2
+- proto: DeployableFieldBaseCapsule
+  entities:
+  - uid: 24233
+    components:
+    - type: Transform
+      pos: 81.5,-20.5
       parent: 2
 - proto: DeskBell
   entities:
@@ -118591,6 +118591,48 @@ entities:
     - type: Transform
       pos: 8.5,-20.5
       parent: 2
+- proto: KoronusFootfallAivoriusArchive
+  entities:
+  - uid: 24227
+    components:
+    - type: Transform
+      pos: 82.5,-15.5
+      parent: 2
+- proto: KoronusFootfallAstropathicRelay
+  entities:
+  - uid: 24232
+    components:
+    - type: Transform
+      pos: 79.5,-18.5
+      parent: 2
+- proto: KoronusFootfallCargoOfficio
+  entities:
+  - uid: 24229
+    components:
+    - type: Transform
+      pos: 78.5,-16.5
+      parent: 2
+- proto: KoronusFootfallFoulstoneSurveyIntake
+  entities:
+  - uid: 24228
+    components:
+    - type: Transform
+      pos: 80.5,-16.5
+      parent: 2
+- proto: KoronusFootfallMedicaeIntake
+  entities:
+  - uid: 24231
+    components:
+    - type: Transform
+      pos: 74.5,-18.5
+      parent: 2
+- proto: KoronusFootfallMinersGuild
+  entities:
+  - uid: 24230
+    components:
+    - type: Transform
+      pos: 75.5,-17.5
+      parent: 2
 - proto: Lamp
   entities:
   - uid: 18895
@@ -119385,6 +119427,13 @@ entities:
     - type: Transform
       pos: 16.5,4.5
       parent: 2
+- proto: MachineThermobath
+  entities:
+  - uid: 10158
+    components:
+    - type: Transform
+      pos: 6.5,-4.5
+      parent: 2
 - proto: MapPropCoil
   entities:
   - uid: 18954
@@ -119642,6 +119691,20 @@ entities:
     components:
     - type: Transform
       pos: 42.5,22.5
+      parent: 2
+- proto: MarkerWH40KAct1FootfallArrival
+  entities:
+  - uid: 24235
+    components:
+    - type: Transform
+      pos: 16.5,-17.5
+      parent: 2
+- proto: MarkerWH40KMerchantSpawn
+  entities:
+  - uid: 24234
+    components:
+    - type: Transform
+      pos: -46.5,-14.5
       parent: 2
 - proto: MatchboxGuardsman
   entities:
@@ -124838,6 +124901,10 @@ entities:
         - False
       - - 19862
         - False
+      - - 19133
+        - False
+      - - 19862
+        - False
   - uid: 19770
     components:
     - type: Transform
@@ -124847,6 +124914,8 @@ entities:
       inputItems:
       - - 19864
         - True
+      - - 19864
+        - False
       - - 19864
         - False
       - - 19864
@@ -126773,6 +126842,13 @@ entities:
     - type: Transform
       rot: -1.5707963267948966 rad
       pos: 40.5,-39.5
+      parent: 2
+- proto: SpawnPointLatejoin
+  entities:
+  - uid: 24236
+    components:
+    - type: Transform
+      pos: 20.5,-17.5
       parent: 2
 - proto: SpiderWeb
   entities:
@@ -149965,54 +150041,5 @@ entities:
     components:
     - type: Transform
       pos: 7.188237,-20.291098
-      parent: 2
-- proto: KoronusFootfallAivoriusArchive
-  entities:
-  - uid: 24227
-    components:
-    - type: Transform
-      pos: 82.5,-15.5
-      parent: 2
-- proto: KoronusFootfallFoulstoneSurveyIntake
-  entities:
-  - uid: 24228
-    components:
-    - type: Transform
-      pos: 80.5,-16.5
-      parent: 2
-- proto: KoronusFootfallCargoOfficio
-  entities:
-  - uid: 24229
-    components:
-    - type: Transform
-      pos: 78.5,-16.5
-      parent: 2
-- proto: KoronusFootfallMinersGuild
-  entities:
-  - uid: 24230
-    components:
-    - type: Transform
-      pos: 75.5,-17.5
-      parent: 2
-- proto: KoronusFootfallMedicaeIntake
-  entities:
-  - uid: 24231
-    components:
-    - type: Transform
-      pos: 74.5,-18.5
-      parent: 2
-- proto: KoronusFootfallAstropathicRelay
-  entities:
-  - uid: 24232
-    components:
-    - type: Transform
-      pos: 79.5,-18.5
-      parent: 2
-- proto: DeployableFieldBaseCapsule
-  entities:
-  - uid: 24233
-    components:
-    - type: Transform
-      pos: 81.5,-20.5
       parent: 2
 ...

@@ -44,6 +44,11 @@
   path: "/Textures/_WH40K/Shaders/death_transition.swsl"
 
 - type: shader
+  id: HeretekAct1Shatter
+  kind: source
+  path: "/Textures/_WH40K/Shaders/act1_shatter.swsl"
+
+- type: shader
   id: HeretekScreenSaturation
   kind: source
   path: "/Textures/_WH40K/Shaders/screen_saturation.swsl"

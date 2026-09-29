@@ -42,12 +42,12 @@ language-NovaCygniBasic-description =
     A long split dialect of Sol Common, over the years it has turned into the language of the USSP.
     To an outsider it sounds similar, but compared to Sol Common it sounds like gibberish.
 
-language-TauCetiBasic-name = Andromeda Standard
+language-TauCetiBasic-name = Low Gothic
 language-TauCetiBasic-description =
     Established shortly after humans had colonized their local cluster, the andromeda standard has evolved rapidly with each discovery of an alien species. Changing to allow more diverse,
     and a wider range of words and sounds that can be spoken by every known species. Unfortunately, this makes it almost impossible to learn if you didn't grow up surrounded by it, and learning it from a young age.
 
-language-Tradeband-name = Tradeband
+language-Tradeband-name = High Gothic
 language-Tradeband-description =
     Descended from latin and romance languages of old Earth - Tradeband remains the main tongue of the upper class of humanity.
     The language sounds elegant and well structured to most ears. It remains in popular use with traders - diplomats - and those seeking to hold onto a piece of a romantic past.

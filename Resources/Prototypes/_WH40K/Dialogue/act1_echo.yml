@@ -1,0 +1,241 @@
+- type: wh40kDialogue
+  id: WH40KAct1EchoDialogue
+  interactionMode: Personal
+  repeatable: false
+  typewriterCps: 24
+  completeActions:
+    - type: SetFlag
+      flag: wh40k_act1_vision_sequence
+  scene:
+    hideHud: false
+    allowCancel: false
+    resumeMode: Restart
+    showActors: false
+    duckBackgroundMusic: false
+    windowWidth: 1120
+    windowMinHeight: 230
+    windowMaxHeight: 350
+  steps:
+    - speaker: npc
+      lineType: narration
+      text: heretek-act1-echo-001
+    - speaker: initiator
+      lineType: thought
+      text: heretek-act1-echo-002
+    - speaker: npc
+      text: heretek-act1-echo-003
+    - speaker: npc
+      text: heretek-act1-echo-004
+    - type: choice
+      speaker: initiator
+      lineType: thought
+      text: heretek-act1-echo-005
+      choices:
+        - text: heretek-act1-echo-choice-1
+          responseSteps:
+            - speaker: initiator
+              lineType: thought
+              text: heretek-act1-echo-choice-1-selected
+            - speaker: npc
+              text: heretek-act1-echo-choice-1-response
+        - text: heretek-act1-echo-choice-2
+          responseSteps:
+            - speaker: initiator
+              lineType: thought
+              text: heretek-act1-echo-choice-2-selected
+            - speaker: npc
+              text: heretek-act1-echo-choice-2-response
+        - text: heretek-act1-echo-choice-3
+          responseSteps:
+            - speaker: initiator
+              lineType: thought
+              text: heretek-act1-echo-choice-3-selected
+            - speaker: npc
+              text: heretek-act1-echo-choice-3-response
+    - speaker: npc
+      text: heretek-act1-echo-006
+    - speaker: npc
+      text: heretek-act1-echo-007
+    - speaker: initiator
+      lineType: thought
+      text: heretek-act1-echo-008
+    - type: choice
+      speaker: initiator
+      lineType: thought
+      text: heretek-act1-echo-009
+      choices:
+        - text: heretek-act1-echo-choice-4
+          responseSteps:
+            - speaker: initiator
+              lineType: thought
+              text: heretek-act1-echo-choice-4-selected
+            - speaker: npc
+              text: heretek-act1-echo-choice-4-response
+        - text: heretek-act1-echo-choice-5
+          responseSteps:
+            - speaker: initiator
+              lineType: thought
+              text: heretek-act1-echo-choice-5-selected
+            - speaker: npc
+              text: heretek-act1-echo-choice-5-response
+        - text: heretek-act1-echo-choice-6
+          responseSteps:
+            - speaker: initiator
+              lineType: thought
+              text: heretek-act1-echo-choice-6-selected
+            - speaker: npc
+              text: heretek-act1-echo-choice-6-response
+    - speaker: npc
+      text: heretek-act1-echo-010
+    - speaker: npc
+      text: heretek-act1-echo-011
+    - speaker: npc
+      text: heretek-act1-echo-012
+    - type: choice
+      speaker: initiator
+      lineType: thought
+      text: heretek-act1-echo-013
+      choices:
+        - text: heretek-act1-echo-choice-7
+          responseSteps:
+            - speaker: initiator
+              lineType: thought
+              text: heretek-act1-echo-choice-7-selected
+            - speaker: npc
+              text: heretek-act1-echo-choice-7-response
+        - text: heretek-act1-echo-choice-8
+          responseSteps:
+            - speaker: initiator
+              lineType: thought
+              text: heretek-act1-echo-choice-8-selected
+            - speaker: npc
+              text: heretek-act1-echo-choice-8-response
+        - text: heretek-act1-echo-choice-9
+          responseSteps:
+            - speaker: initiator
+              lineType: thought
+              text: heretek-act1-echo-choice-9-selected
+            - speaker: npc
+              text: heretek-act1-echo-choice-9-response
+    - speaker: npc
+      text: heretek-act1-echo-014
+    - speaker: npc
+      text: heretek-act1-echo-015
+    - speaker: npc
+      text: heretek-act1-echo-016
+    - speaker: npc
+      text: heretek-act1-echo-017
+    - type: choice
+      speaker: npc
+      text: heretek-act1-echo-018
+      choices:
+        - text: heretek-act1-echo-choice-final
+          responseSteps:
+            - speaker: initiator
+              lineType: thought
+              text: heretek-act1-echo-choice-final-selected
+            - speaker: npc
+              text: heretek-act1-echo-choice-final-response
+            - speaker: npc
+              lineType: narration
+              text: heretek-act1-echo-019
+
+- type: wh40kDialogue
+  id: WH40KAct1VisionDialogue
+  interactionMode: Personal
+  repeatable: false
+  typewriterCps: 32
+  scene:
+    hideHud: false
+    allowCancel: false
+    allowSkip: false
+    resumeMode: Restart
+    showActors: false
+    duckBackgroundMusic: false
+    windowWidth: 1120
+    windowMinHeight: 230
+    windowMaxHeight: 350
+  steps:
+    - speaker: npc
+      text: heretek-act1-vision-001
+      sceneState:
+        showDim: false
+      autoAdvanceAfter: 1.4
+    - speaker: npc
+      text: heretek-act1-vision-002
+      sceneState:
+        showDim: false
+      autoAdvanceAfter: 1.4
+    - speaker: npc
+      text: heretek-act1-vision-003
+      sceneState:
+        showDim: false
+      autoAdvanceAfter: 1.4
+    - speaker: npc
+      text: heretek-act1-vision-004
+      sceneState:
+        showDim: false
+      autoAdvanceAfter: 1.4
+    - speaker: npc
+      text: heretek-act1-vision-005
+      sceneState:
+        showDim: false
+      autoAdvanceAfter: 1.4
+    - speaker: npc
+      text: heretek-act1-vision-006
+      sceneState:
+        showDim: false
+      autoAdvanceAfter: 1.4
+    - speaker: npc
+      text: heretek-act1-vision-007
+      sceneState:
+        showDim: false
+      autoAdvanceAfter: 1.4
+    - speaker: npc
+      text: heretek-act1-vision-008
+      sceneState:
+        showDim: false
+      autoAdvanceAfter: 1.4
+    - speaker: npc
+      lineType: narration
+      text: heretek-act1-vision-009
+      sceneState:
+        showDim: false
+      autoAdvanceAfter: 1.8
+
+- type: wh40kDialogue
+  id: WH40KAct1FractureDialogue
+  interactionMode: Personal
+  repeatable: false
+  typewriterCps: 32
+  scene:
+    hideHud: false
+    allowCancel: false
+    allowSkip: false
+    resumeMode: Restart
+    showActors: false
+    duckBackgroundMusic: false
+    windowWidth: 1120
+    windowMinHeight: 230
+    windowMaxHeight: 350
+  steps:
+    - speaker: npc
+      text: heretek-act1-fracture-001
+      sceneState:
+        showDim: false
+      autoAdvanceAfter: 0.35
+    - speaker: npc
+      text: heretek-act1-fracture-002
+      sceneState:
+        showDim: false
+      autoAdvanceAfter: 0.45
+    - speaker: npc
+      text: heretek-act1-fracture-003
+      sceneState:
+        showDim: false
+      autoAdvanceAfter: 0.40
+    - speaker: npc
+      text: heretek-act1-fracture-004
+      sceneState:
+        showDim: false
+      autoAdvanceAfter: 0.35

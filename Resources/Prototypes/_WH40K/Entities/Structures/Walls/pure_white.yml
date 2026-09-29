@@ -1,0 +1,36 @@
+- type: entity
+  parent: BaseWall
+  id: WallWH40KPureWhiteIndestructible
+  name: pure white wall
+  suffix: WH40K, indestructible
+  components:
+  - type: Sprite
+    sprite: _WH40K/Structures/Walls/pure_white.rsi
+    layers:
+    - state: full
+  - type: Icon
+    sprite: _WH40K/Structures/Walls/pure_white.rsi
+    state: full
+  - type: IconSmooth
+    key: walls
+    mode: NoSprite
+  - type: Fixtures
+    fixtures:
+      fix1:
+        shape:
+          !type:PhysShapeAabb
+          bounds: "-0.5,-0.5,0.5,0.5"
+        mask:
+        - FullTileMask
+        layer:
+        - WallLayer
+        density: 9000
+  - type: Damageable
+    damageContainer: StructuralInorganic
+    damageModifierSet: StructuralMetallicStrong
+  - type: RadiationBlocker
+    resistance: 5
+  - type: StaticPrice
+    price: 110
+  - type: ArmorThickness
+    canBePierced: false

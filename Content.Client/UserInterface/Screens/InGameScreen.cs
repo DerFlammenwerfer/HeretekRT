@@ -18,5 +18,14 @@ public abstract class InGameScreen : UIScreen
 
     public abstract void SetHudVisible(bool visible);
 
+    /// <summary>
+    /// Hides every gameplay HUD element, including the top bar. Normal dialogue hiding intentionally keeps that
+    /// bar available, while cinematic scenes such as Act I require a completely clean screen.
+    /// </summary>
+    public virtual void SetHudVisibleFully(bool visible)
+    {
+        SetHudVisible(visible);
+    }
+
     public abstract void AttachDialogueOverlay(Control overlay);
 }

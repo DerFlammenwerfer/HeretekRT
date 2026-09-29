@@ -91,6 +91,14 @@ public sealed partial class SeparatedChatGameScreen : InGameScreen
         _hudHidden = true;
     }
 
+    public override void SetHudVisibleFully(bool visible)
+    {
+        SetHudVisible(visible);
+
+        if (!visible)
+            TopBar.Visible = false;
+    }
+
     public override void AttachDialogueOverlay(Control overlay)
     {
         if (overlay.Parent != ViewportContainer)

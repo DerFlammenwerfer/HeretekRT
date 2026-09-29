@@ -116,6 +116,14 @@ public sealed partial class DefaultGameScreen : InGameScreen
         _hudHidden = true;
     }
 
+    public override void SetHudVisibleFully(bool visible)
+    {
+        SetHudVisible(visible);
+
+        if (!visible)
+            TopBar.Visible = false;
+    }
+
     public override void AttachDialogueOverlay(Control overlay)
     {
         if (overlay.Parent != this)

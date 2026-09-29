@@ -1,0 +1,79 @@
+- type: entity
+  id: WH40KAct1Echo
+  name: temporal echo
+  suffix: WH40K, Act I
+  save: false
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Transform
+    anchored: true
+  - type: Sprite
+    sprite: Interface/noise.rsi
+    noRot: true
+    scale: 2.2, 3.1
+    drawdepth: Effects
+    layers:
+    - state: noise
+      shader: unshaded
+      color: "#F8F8F8D0"
+  - type: DialogueInteractable
+    dialogue: WH40KAct1EchoDialogue
+    dialogues:
+    - dialogue: WH40KAct1VisionDialogue
+      conditions:
+      - type: Flag
+        flag: wh40k_act1_vision_sequence
+        value: true
+    interactionRange: 4.5
+    maxDialogueRange: 12
+    requireLineOfSight: true
+    autoTrigger: false
+  - type: Act1Echo
+
+- type: entity
+  id: WH40KAct1Vision
+  parent: MobHuman
+  name: possible self
+  suffix: WH40K, Act I
+  save: false
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: BlockMovement
+    blockInteraction: true
+  - type: Physics
+    canCollide: false
+  - type: PointLight
+    enabled: true
+    color: "#DDEBFF"
+    radius: 2.4
+    energy: 0.7
+    softness: 0.9
+    castShadows: false
+
+- type: entity
+  id: WH40KAct1VisionManifestation
+  name: vision manifestation
+  suffix: WH40K, Act I
+  save: false
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Transform
+    anchored: true
+  - type: TimedDespawn
+    lifetime: 0.85
+  - type: Sprite
+    sprite: Interface/noise.rsi
+    noRot: true
+    scale: 1.2, 1.7
+    drawdepth: Effects
+    layers:
+    - state: noise
+      shader: unshaded
+      color: "#DDEBFFE0"
+  - type: PointLight
+    enabled: true
+    color: "#DDEBFF"
+    radius: 2.8
+    energy: 0.45
+    softness: 1
+    castShadows: false

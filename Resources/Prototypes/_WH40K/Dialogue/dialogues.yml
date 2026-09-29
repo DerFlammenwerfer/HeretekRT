@@ -496,3 +496,31 @@
   steps:
     - speaker: npc
       text: heretek-dialogue-fizzo-cutoff-chat
+
+- type: wh40kDialogue
+  id: WH40KMerchantGreeting
+  interactionMode: Personal
+  scene:
+    windowAnchor: BottomCenter
+    actorScale: 9
+    dimInactiveActors: true
+  steps:
+    - speaker: npc
+      text: wh40k-merchant-greeting
+    - id: merchant-menu
+      type: choice
+      speaker: npc
+      text: wh40k-merchant-menu
+      choices:
+        - text: wh40k-merchant-choice-shop
+          actions:
+            - type: OpenMerchant
+        - text: wh40k-merchant-choice-talk
+          nextStep: merchant-menu
+          responseSteps:
+            - speaker: npc
+              text: wh40k-merchant-talk
+        - text: wh40k-merchant-choice-goodbye
+          responseSteps:
+            - speaker: npc
+              text: wh40k-merchant-goodbye

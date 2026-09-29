@@ -42,6 +42,15 @@ public sealed class Wh40kPlayerProgressManager
         return _progressByUser.GetValueOrDefault(userId, Wh40kPlayerProgressSnapshot.Unknown);
     }
 
+    public async Task<Wh40kPlayerProgressSnapshot> CompleteAct1Async(
+        NetUserId userId,
+        CancellationToken cancel = default)
+    {
+        var progress = await _db.CompleteWh40kAct1Async(userId, cancel);
+        _progressByUser[userId] = progress;
+        return progress;
+    }
+
     public void Remove(NetUserId userId)
     {
         _progressByUser.Remove(userId);

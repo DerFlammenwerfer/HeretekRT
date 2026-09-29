@@ -24,7 +24,7 @@ trait-language-solcommon-desc =
     With its roots in Mandarin Chinese - Common evolved as the official language of the Trans-Solar Federation - with officials working to tie it together with a common tongue.
     It's spoken by state officials, the armed forces, by those who either feel a sense of national pride in the Federation or otherwise fell sway to the culture.
 
-trait-language-tradeband-name = Tradeband
+trait-language-tradeband-name = High Gothic
 trait-language-tradeband-desc =
     Descended from latin and romance languages of old Earth - Tradeband remains the main tongue of the upper class of humanity.
     The language sounds elegant and well structured to most ears. It remains in popular use with traders - diplomats - and those seeking to hold onto a piece of a romantic past.

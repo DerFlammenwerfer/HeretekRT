@@ -1,0 +1,11 @@
+- type: tile
+  id: FloorWH40KPureWhite
+  name: tiles-wh40k-pure-white
+  sprite: /Textures/_WH40K/Tiles/pure_white.png
+  unshaded: true
+  baseTurf: Plating
+  isSubfloor: false
+  footstepSounds:
+    collection: FootstepTile
+  heatCapacity: 10000
+  indestructible: true

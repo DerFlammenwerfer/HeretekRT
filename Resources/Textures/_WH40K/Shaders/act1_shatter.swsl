@@ -1,0 +1,130 @@
+light_mode unshaded;
+
+uniform sampler2D SCREEN_TEXTURE;
+uniform highp float fracture;
+uniform highp float blackout;
+
+const highp float Pi = 3.14159265359;
+const highp float Tau = 6.28318530718;
+
+highp vec2 hash(highp vec2 point)
+{
+    point = vec2(
+        dot(point, vec2(127.1, 311.7)),
+        dot(point, vec2(269.5, 183.3)));
+    return fract(sin(point) * 43758.5453123);
+}
+
+highp vec2 rotate(highp vec2 vector, highp float angle)
+{
+    highp float sine = sin(angle);
+    highp float cosine = cos(angle);
+    return vec2(
+        vector.x * cosine - vector.y * sine,
+        vector.x * sine + vector.y * cosine);
+}
+
+// A finite fracture with a needle-like tip.  Using point-to-segment distance
+// here made every crack look like a rounded grey tube.
+highp float taperedCrack(highp vec2 point, highp vec2 start, highp vec2 end, highp float width)
+{
+    highp vec2 line = end - start;
+    highp float lengthSquared = max(dot(line, line), 0.000001);
+    highp float position = dot(point - start, line) / lengthSquared;
+    highp float perpendicularDistance = abs((point.x - start.x) * line.y - (point.y - start.y) * line.x)
+        / sqrt(lengthSquared);
+    highp float taperedWidth = mix(width, width * 0.08, smoothstep(0.32, 0.985, position));
+    highp float body = 1.0 - smoothstep(taperedWidth, taperedWidth * 1.55, perpendicularDistance);
+    highp float startCap = smoothstep(-0.012, 0.012, position);
+    highp float pointedTip = 1.0 - smoothstep(0.94, 1.005, position);
+    return body * startCap * pointedTip;
+}
+
+// A handful of broken, unequal paths from the impact point. The shock reaches
+// them in one snap; only the later hairline forks continue to spread.
+highp float crackNetwork(highp vec2 point, highp float degree)
+{
+    highp float cracks = 0.0;
+
+    for (highp int index = 0; index < 9; index++)
+    {
+        highp float number = float(index);
+        highp vec2 seed = hash(vec2(number, 17.0));
+        highp vec2 bendSeed = hash(vec2(number, 51.0));
+        highp float angle = Tau * (number / 9.0 + (seed.x - 0.5) * 0.12);
+        highp vec2 direction = vec2(cos(angle), sin(angle));
+        highp float fullLength = mix(0.42, 1.38, seed.y);
+        highp float shatterAt = 0.045 + number * 0.065 + seed.x * 0.012;
+        highp float growth = clamp((degree - shatterAt) * 9.4, 0.0, 1.0);
+        highp float travelled = fullLength * growth;
+        highp float firstLength = fullLength * mix(0.27, 0.48, bendSeed.x);
+        highp vec2 origin = direction * (0.003 + seed.y * 0.012);
+
+        if (travelled > length(origin))
+        {
+            highp vec2 firstEnd = direction * min(travelled, firstLength);
+            cracks = max(cracks, taperedCrack(point, origin, firstEnd, 0.00092));
+        }
+
+        if (travelled > firstLength)
+        {
+            highp vec2 kinkDirection = rotate(direction, (bendSeed.y - 0.5) * 0.72);
+            highp vec2 kink = direction * firstLength;
+            highp vec2 secondEnd = kink + kinkDirection * (travelled - firstLength);
+            cracks = max(cracks, taperedCrack(point, kink, secondEnd, 0.00070));
+
+            // Short, finer side fractures make the panes read as glass rather than spokes.
+            highp float forkLength = fullLength * mix(0.11, 0.25, seed.x);
+            highp float forkStart = firstLength * mix(0.55, 0.92, bendSeed.y);
+            highp float forkProgress = clamp((degree - shatterAt - 0.16 - bendSeed.x * 0.08) * 8.5, 0.0, 1.0);
+            highp vec2 forkOrigin = direction * forkStart;
+            highp vec2 forkDirection = rotate(direction, mix(-1.32, 1.32, seed.y));
+            highp vec2 forkEnd = forkOrigin + forkDirection * forkLength * forkProgress;
+            if (forkProgress > 0.01)
+                cracks = max(cracks, taperedCrack(point, forkOrigin, forkEnd, 0.00042));
+        }
+    }
+
+    return cracks;
+}
+
+void fragment()
+{
+    highp vec2 screenUv = FRAGCOORD.xy * SCREEN_PIXEL_SIZE;
+    highp float degree = clamp(fracture, 0.0, 1.0);
+
+    highp vec2 impact = vec2(0.48, 0.46);
+    highp vec2 aspect = vec2(SCREEN_PIXEL_SIZE.y / SCREEN_PIXEL_SIZE.x, 1.0);
+    highp vec2 point = (screenUv - impact) * aspect;
+    highp float presence = smoothstep(0.012, 0.060, degree);
+
+    highp float crackCore = crackNetwork(point, degree) * presence;
+
+    // A shard is identified by its angle and an uneven radial band.  Its offset
+    // is discontinuous from its neighbours, so the scene truly shifts by a
+    // different amount on each broken piece instead of only bending the lines.
+    highp float angle = atan(point.y, point.x);
+    highp float radius = length(point);
+    highp float warpedAngle = angle
+        + sin(radius * 16.0 + angle * 2.7) * 0.075
+        + sin(radius * 7.0 - angle * 4.1) * 0.045;
+    highp float sector = floor((warpedAngle + Pi) / Tau * 13.0);
+    highp float ring = floor(radius * 5.2 + hash(vec2(sector, 3.0)).x * 0.85);
+    highp vec2 shardSeed = hash(vec2(sector, ring));
+    highp float shardOrder = mod(sector * 5.0 + 3.0, 13.0);
+    highp float shardBreak = smoothstep(0.065 + shardOrder * 0.045, 0.175 + shardOrder * 0.045, degree);
+    highp vec2 shardDirection = normalize(shardSeed * 2.0 - 1.0 + vec2(0.0001));
+    highp vec2 shardOffset = shardDirection * SCREEN_PIXEL_SIZE * (18.0 + 72.0 * degree) * shardBreak * presence;
+    highp vec2 refractedUv = clamp(screenUv + shardOffset, vec2(0.001), vec2(0.999));
+
+    // The channels sample different points of the displaced shard, producing a sharp
+    // glass refraction instead of a barely visible screen warp.
+    highp vec3 scene = vec3(
+        zTextureSpec(SCREEN_TEXTURE, clamp(refractedUv + shardOffset * 0.16, vec2(0.001), vec2(0.999))).r,
+        zTextureSpec(SCREEN_TEXTURE, refractedUv).g,
+        zTextureSpec(SCREEN_TEXTURE, clamp(refractedUv - shardOffset * 0.13, vec2(0.001), vec2(0.999))).b);
+
+    highp vec3 color = mix(scene, vec3(0.002, 0.004, 0.007), crackCore * 0.97);
+    color *= 1.0 - clamp(blackout, 0.0, 1.0);
+    COLOR = vec4(color, 1.0);
+}

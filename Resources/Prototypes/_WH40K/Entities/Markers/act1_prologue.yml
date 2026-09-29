@@ -1,0 +1,150 @@
+- type: entity
+  id: MarkerWH40KAct1PlayerSpawn
+  parent: MarkerBase
+  name: Act I player spawn
+  suffix: WH40K, Mapping
+  components:
+  - type: Sprite
+    layers:
+    - state: green
+      shader: unshaded
+  - type: Act1PrologueMarker
+    role: PlayerSpawn
+
+- type: entity
+  id: MarkerWH40KAct1EchoAnchor
+  parent: MarkerBase
+  name: Act I echo anchor
+  suffix: WH40K, Mapping
+  components:
+  - type: Sprite
+    layers:
+    - state: pink
+      shader: unshaded
+  - type: Act1PrologueMarker
+    role: EchoAnchor
+
+- type: entity
+  id: MarkerWH40KAct1VisionOne
+  parent: MarkerBase
+  name: Act I vision 1
+  suffix: WH40K, Mapping
+  components:
+  - type: Sprite
+    layers:
+    - state: blue
+      color: "#e2f0ff"
+      shader: unshaded
+  - type: Act1PrologueMarker
+    role: VisionOne
+
+- type: entity
+  id: MarkerWH40KAct1VisionTwo
+  parent: MarkerBase
+  name: Act I vision 2
+  suffix: WH40K, Mapping
+  components:
+  - type: Sprite
+    layers:
+    - state: blue
+      color: "#7fb8ff"
+      shader: unshaded
+  - type: Act1PrologueMarker
+    role: VisionTwo
+
+- type: entity
+  id: MarkerWH40KAct1VisionThree
+  parent: MarkerBase
+  name: Act I vision 3
+  suffix: WH40K, Mapping
+  components:
+  - type: Sprite
+    layers:
+    - state: blue
+      color: "#6f8eff"
+      shader: unshaded
+  - type: Act1PrologueMarker
+    role: VisionThree
+
+- type: entity
+  id: MarkerWH40KAct1VisionFour
+  parent: MarkerBase
+  name: Act I vision 4
+  suffix: WH40K, Mapping
+  components:
+  - type: Sprite
+    layers:
+    - state: blue
+      color: "#a67bff"
+      shader: unshaded
+  - type: Act1PrologueMarker
+    role: VisionFour
+
+- type: entity
+  id: MarkerWH40KAct1VisionFive
+  parent: MarkerBase
+  name: Act I vision 5
+  suffix: WH40K, Mapping
+  components:
+  - type: Sprite
+    layers:
+    - state: blue
+      color: "#e47bff"
+      shader: unshaded
+  - type: Act1PrologueMarker
+    role: VisionFive
+
+- type: entity
+  id: MarkerWH40KAct1VisionSix
+  parent: MarkerBase
+  name: Act I vision 6
+  suffix: WH40K, Mapping
+  components:
+  - type: Sprite
+    layers:
+    - state: blue
+      color: "#ff7fdf"
+      shader: unshaded
+  - type: Act1PrologueMarker
+    role: VisionSix
+
+- type: entity
+  id: MarkerWH40KAct1VisionSeven
+  parent: MarkerBase
+  name: Act I vision 7
+  suffix: WH40K, Mapping
+  components:
+  - type: Sprite
+    layers:
+    - state: blue
+      color: "#ff7f9e"
+      shader: unshaded
+  - type: Act1PrologueMarker
+    role: VisionSeven
+
+- type: entity
+  id: MarkerWH40KAct1VisionEight
+  parent: MarkerBase
+  name: Act I vision 8
+  suffix: WH40K, Mapping
+  components:
+  - type: Sprite
+    layers:
+    - state: blue
+      color: "#ffc36b"
+      shader: unshaded
+  - type: Act1PrologueMarker
+    role: VisionEight
+
+- type: entity
+  id: MarkerWH40KAct1FootfallArrival
+  parent: MarkerBase
+  name: Act I Footfall arrival
+  suffix: WH40K, Mapping
+  components:
+  - type: Sprite
+    layers:
+    - state: red
+      shader: unshaded
+  - type: Act1PrologueMarker
+    role: FootfallArrival

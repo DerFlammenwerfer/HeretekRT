@@ -572,6 +572,36 @@ namespace Content.Server.Database
                 slot);
         }
 
+        /// <summary>
+        /// Completes the first authored act without changing the selected profile or character foundation.
+        /// </summary>
+        public async Task<Wh40kPlayerProgressSnapshot> CompleteWh40kAct1Async(
+            NetUserId userId,
+            CancellationToken cancel = default)
+        {
+            await using var db = await GetDb(cancel);
+            var progress = await db.DbContext.Wh40kPlayerProgresses
+                .SingleOrDefaultAsync(candidate => candidate.UserId == userId.UserId, cancel);
+
+            if (progress == null)
+                return Wh40kPlayerProgressSnapshot.Unknown;
+
+            var snapshot = ToSnapshot(progress);
+            if (snapshot.ActStage == Wh40kActStage.Act1Completed)
+                return snapshot;
+
+            if (snapshot.ActStage != Wh40kActStage.Act1InProgress ||
+                snapshot.OnboardingStatus != Wh40kOnboardingStatus.CharacterCreated)
+            {
+                return snapshot;
+            }
+
+            progress.ActStage = (int) Wh40kActStage.Act1Completed;
+            progress.UpdatedAt = DateTime.UtcNow;
+            await db.DbContext.SaveChangesAsync(cancel);
+            return ToSnapshot(progress);
+        }
+
         public async Task<Wh40kAccountRpgRecord?> GetWh40kAccountRpgAsync(
             NetUserId userId,
             CancellationToken cancel = default)

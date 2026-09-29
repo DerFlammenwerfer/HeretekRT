@@ -1,0 +1,29 @@
+<DefaultWindow
+    xmlns="https://spacestation14.io"
+    Title="{Loc 'wh40k-merchant-title'}"
+    MinSize="720 560"
+    SetSize="760 620">
+    <BoxContainer Orientation="Vertical" Margin="14">
+        <BoxContainer Orientation="Horizontal">
+            <BoxContainer Orientation="Vertical" HorizontalExpand="True">
+                <Label Name="MerchantTitle" StyleClasses="StatusFieldTitle" FontColorOverride="#e4bd70" />
+                <Label Name="MerchantSubtitle" Text="{Loc 'wh40k-merchant-subtitle'}" FontColorOverride="#8f9aa5" />
+            </BoxContainer>
+            <BoxContainer Orientation="Vertical" HorizontalAlignment="Right">
+                <Label Name="RefreshLabel" HorizontalAlignment="Right" FontColorOverride="#e4bd70" />
+                <Label Name="CycleLabel" HorizontalAlignment="Right" FontColorOverride="#8f9aa5" />
+            </BoxContainer>
+        </BoxContainer>
+        <PanelContainer Margin="0 12 0 12">
+            <RichTextLabel Name="GreetingLabel" Margin="12" />
+        </PanelContainer>
+        <BoxContainer Orientation="Horizontal" Margin="0 0 0 8">
+            <Label Name="BalanceLabel" HorizontalExpand="True" FontColorOverride="#9ed1aa" />
+            <Button Name="RefreshButton" Text="{Loc 'wh40k-merchant-refresh-button'}" />
+        </BoxContainer>
+        <ScrollContainer Name="OffersScroll" VerticalExpand="True" HScrollEnabled="False">
+            <BoxContainer Name="OffersContainer" Orientation="Vertical" HorizontalExpand="True" />
+        </ScrollContainer>
+        <Label Name="FooterLabel" Margin="0 10 0 0" FontColorOverride="#7d8791" />
+    </BoxContainer>
+</DefaultWindow>

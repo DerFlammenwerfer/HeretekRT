@@ -342,7 +342,7 @@ public sealed partial class StationSpawningSystem : SharedStationSpawningSystem
                  profile.RedFlavorText != "" ||
                  profile.Wh40kBuild.PortraitId != null))
             {
-                AddComp<DetailExaminableComponent>(entity.Value).SetProfile(profile);
+                EnsureComp<DetailExaminableComponent>(entity.Value).SetProfile(profile);
             }
         }
 

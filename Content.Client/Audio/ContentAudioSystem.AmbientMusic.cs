@@ -468,6 +468,11 @@ public sealed partial class ContentAudioSystem
     /// <param name="fadein"> Seconds for the music to fade in. Put 0 for no fadein. </param>
     private void PlayMusicTrack(string path, float volume, float fadein, bool combatMode)
     {
+        var ambientMusicEvent = new PlayAmbientMusicEvent();
+        RaiseLocalEvent(ref ambientMusicEvent);
+        if (ambientMusicEvent.Cancelled)
+            return;
+
         _isCombatMusicPlaying = combatMode;
         FadeOut(_ambientMusicStream);
         _ambientMusicStoredGain = null;
@@ -618,6 +623,21 @@ public sealed partial class ContentAudioSystem
         _ambientMusicStoredGain = null;
         FadeOut(_ambientMusicStream);
         _ambientMusicStream = null;
+    }
+
+    /// <summary>
+    /// Restores ambient music after a scene temporarily suppressed it.
+    /// </summary>
+    public void ResumeAmbientMusic()
+    {
+        if (_state.CurrentState is not GameplayState || _ambientMusicStream != null)
+            return;
+
+        _initialStationMusicBool = false;
+        _initialStationMusicTimer = 0f;
+        _replayAmbientMusicTimer = 0f;
+        _currentlyPlaying = MusicType.None;
+        SetMusic(_lastGrid, _lastBiome, _lastCombatState);
     }
 
 }

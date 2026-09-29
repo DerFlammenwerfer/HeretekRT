@@ -1,0 +1,13 @@
+- type: job
+  id: RogueTrader
+  name: job-name-rogue-trader
+  description: job-description-rogue-trader
+  playTimeTracker: JobRogueTrader
+  startingGear: WandererGear
+  icon: JobIconPassenger
+  supervisors: job-supervisors-rogue-trader
+  displayWeight: 100
+  setPreference: false
+  canBeAntag: false
+  accessGroups:
+  - GeneralAccess

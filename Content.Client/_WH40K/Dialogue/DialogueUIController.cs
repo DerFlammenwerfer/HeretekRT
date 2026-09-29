@@ -40,6 +40,7 @@ public sealed class DialogueUIController : UIController, IOnStateEntered<Gamepla
     private float _revealAccumulator;
     private bool _lineFullyRevealed;
     private bool _lineHasChoices;
+    private bool _allowSkip = true;
     private bool _awaitingAdvance;
     private bool _awaitingChoiceResponse;
     private bool _awaitingCancel;
@@ -115,7 +116,7 @@ public sealed class DialogueUIController : UIController, IOnStateEntered<Gamepla
             if (_autoAdvanceRemaining <= 0f)
             {
                 _autoAdvanceAfter = null;
-                OnAdvancePressed();
+                RequestAdvance(fromAutoAdvance: true);
             }
         }
 
@@ -163,6 +164,7 @@ public sealed class DialogueUIController : UIController, IOnStateEntered<Gamepla
         _defaultTypewriterCps = ev.TypewriterCps;
         _typewriterCps = ev.TypewriterCps;
         _hideHud = ev.Scene.HideHud;
+        _allowSkip = ev.Scene.AllowSkip;
         _duckBackgroundMusic = ev.Scene.DuckBackgroundMusic;
         _backgroundMusicDuckGain = ev.Scene.BackgroundMusicDuckGain;
         _pendingScene = ev.Scene;
@@ -265,21 +267,38 @@ public sealed class DialogueUIController : UIController, IOnStateEntered<Gamepla
 
     private void OnAdvancePressed()
     {
+        RequestAdvance(fromAutoAdvance: false);
+    }
+
+    private void RequestAdvance(bool fromAutoAdvance)
+    {
         if (_overlay == null || _sessionId == null)
             return;
 
         if (!_lineFullyRevealed)
         {
+            if (!_allowSkip)
+                return;
+
             RevealFullLine(skipVoiceTrack: true);
             return;
         }
+
+        if (!_allowSkip && !fromAutoAdvance)
+            return;
+
+        // Timed cutscene lines may be revealed early, but their transition is
+        // owned by the timer.  Previously this sent a request the server had to
+        // reject, leaving the client permanently waiting for a reply.
+        if (!fromAutoAdvance && _autoAdvanceAfter != null)
+            return;
 
         if (_lineHasChoices || _awaitingAdvance || _awaitingChoiceResponse || _awaitingCancel)
             return;
 
         _awaitingAdvance = true;
         _overlay.SetContinueVisible(false);
-        _net.SendSystemNetworkMessage(new DialogueAdvanceRequestEvent(_sessionId.Value));
+        _net.SendSystemNetworkMessage(new DialogueAdvanceRequestEvent(_sessionId.Value, fromAutoAdvance));
     }
 
     private void OnTextAreaPressed()
@@ -336,7 +355,7 @@ public sealed class DialogueUIController : UIController, IOnStateEntered<Gamepla
         }
 
         _overlay?.SetContinueText(Loc.GetString("heretek-dialogue-ui-continue"));
-        _overlay?.SetContinueVisible(_autoAdvanceAfter == null);
+        _overlay?.SetContinueVisible(_allowSkip && _autoAdvanceAfter == null);
     }
 
     private void ResetDialogueState(bool immediateMusicStop = false)
@@ -352,6 +371,7 @@ public sealed class DialogueUIController : UIController, IOnStateEntered<Gamepla
         _revealAccumulator = 0f;
         _lineFullyRevealed = false;
         _lineHasChoices = false;
+        _allowSkip = true;
         _awaitingAdvance = false;
         _awaitingChoiceResponse = false;
         _awaitingCancel = false;

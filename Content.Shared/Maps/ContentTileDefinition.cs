@@ -38,6 +38,11 @@ namespace Content.Shared.Maps
         public string Name { get; private set; } = "";
         [DataField("sprite")] public ResPath? Sprite { get; private set; }
 
+        /// <summary>
+        /// Whether this tile is rendered without lighting.
+        /// </summary>
+        [DataField("unshaded")] public bool Unshaded { get; private set; }
+
         [DataField("edgeSprites")] public Dictionary<Direction, ResPath> EdgeSprites { get; private set; } = new();
 
         [DataField("edgeSpritePriority")] public int EdgeSpritePriority { get; private set; } = 0;

@@ -219,6 +219,7 @@ public sealed class DialogueSceneData
 {
     public bool HideHud { get; }
     public bool AllowCancel { get; }
+    public bool AllowSkip { get; }
     public float DimOpacity { get; }
     public float WindowWidth { get; }
     public float WindowMinHeight { get; }
@@ -253,6 +254,7 @@ public sealed class DialogueSceneData
     public DialogueSceneData(
         bool hideHud,
         bool allowCancel,
+        bool allowSkip,
         float dimOpacity,
         float windowWidth,
         float windowMinHeight,
@@ -286,6 +288,7 @@ public sealed class DialogueSceneData
     {
         HideHud = hideHud;
         AllowCancel = allowCancel;
+        AllowSkip = allowSkip;
         DimOpacity = dimOpacity;
         WindowWidth = windowWidth;
         WindowMinHeight = windowMinHeight;
@@ -336,10 +339,12 @@ public sealed class DialogueLineUpdateEvent : EntityEventArgs
 public sealed class DialogueAdvanceRequestEvent : EntityEventArgs
 {
     public int SessionId { get; }
+    public bool IsAutoAdvance { get; }
 
-    public DialogueAdvanceRequestEvent(int sessionId)
+    public DialogueAdvanceRequestEvent(int sessionId, bool isAutoAdvance = false)
     {
         SessionId = sessionId;
+        IsAutoAdvance = isAutoAdvance;
     }
 }
 

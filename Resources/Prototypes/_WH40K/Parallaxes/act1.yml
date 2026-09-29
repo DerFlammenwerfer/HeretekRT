@@ -1,0 +1,8 @@
+- type: parallax
+  id: WH40KAct1White
+  layers:
+  - texture:
+      !type:ImageParallaxTextureSource
+      path: "/Textures/_WH40K/Tiles/pure_white.png"
+    slowness: 0
+    scale: "1, 1"

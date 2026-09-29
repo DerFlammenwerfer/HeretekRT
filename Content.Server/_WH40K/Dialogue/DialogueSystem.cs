@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Content.Server.Database;
 using Content.Server.NPC.Components;
 using Content.Server._WH40K.Dialogue.Components;
+using Content.Server._WH40K.Merchant;
 using Content.Server.Chat.Systems;
 using Content.Server.NameIdentifier;
 using Content.Server.NPC.HTN;
@@ -29,6 +30,7 @@ using Robust.Shared.Audio.Systems;
 using Robust.Shared.Asynchronous;
 using Content.Shared.Verbs;
 using Content.Shared._WH40K.Dialogue;
+using Content.Shared._WH40K.Merchant;
 using Robust.Shared.Map;
 using Robust.Shared.Maths;
 using Robust.Server.GameObjects;
@@ -67,6 +69,7 @@ public sealed class DialogueSystem : EntitySystem
     [Dependency] private DialogueAccessSystem _access = default!;
     [Dependency] private DialogueActionRequirementSystem _requirements = default!;
     [Dependency] private BankSystem _bank = default!;
+    [Dependency] private MerchantSystem _merchant = default!;
 
     private readonly Dictionary<ICommonSession, ActiveDialogueSession> _sessions = new();
     private readonly Dictionary<EntityUid, HashSet<ICommonSession>> _sessionsByTarget = new();
@@ -86,6 +89,7 @@ public sealed class DialogueSystem : EntitySystem
     private readonly ConcurrentDictionary<PersistentDialogueMemoryKey, byte> _resettingPersistentMemoryKeys = new();
     private volatile bool _shuttingDown;
     private float _maxAutoTriggerRange;
+    private bool _autoTriggerRefreshQueued;
     private int _nextSessionId = 1;
 
     public override void Initialize()
@@ -569,8 +573,19 @@ public sealed class DialogueSystem : EntitySystem
 
             if (!component.AutoTrigger
                 || component.AutoTriggerRange <= 0f
-                || !CanStartInteraction(user, target, component, popup: false, autoTrigger: true)
-                || (!resuming && !TryResolveInteraction(user, target, component, out _)))
+                || !CanStartInteraction(user, target, component, popup: false, autoTrigger: true))
+            {
+                continue;
+            }
+
+            if (resuming)
+            {
+                var suspended = _suspendedSessionsByUser[session.UserId];
+                if (!CanAcquireTarget(target, suspended.Dialogue.InteractionMode, suspended.Dialogue))
+                    continue;
+            }
+            else if (!TryResolveInteraction(user, target, component, out var interaction)
+                     || !CanStartResolvedInteraction(target, interaction))
             {
                 continue;
             }
@@ -674,8 +689,25 @@ public sealed class DialogueSystem : EntitySystem
         if (!TryGetCurrentStep(session, out var step) || step.Type == DialogueStepType.Choice)
             return;
 
-        if (session.AutoAdvanceNotBefore > _timing.CurTime)
+        if (!session.AllowSkip && !ev.IsAutoAdvance)
+        {
+            // Cinematic dialogue may only advance through its authored timer. Send the current
+            // state back so an older or desynchronised client cannot remain waiting for a reply.
+            RaiseNetworkEvent(new DialogueLineUpdateEvent(session.SessionId, BuildLineData(session)), session.Session);
             return;
+        }
+
+        if (ev.IsAutoAdvance && step.AutoAdvanceAfter == null)
+            return;
+
+        if (session.AutoAdvanceNotBefore > _timing.CurTime)
+        {
+            // A current client does not ask to advance a timed line manually,
+            // but this acknowledgement keeps an older or desynchronised client
+            // from remaining in its local "request pending" state forever.
+            RaiseNetworkEvent(new DialogueLineUpdateEvent(session.SessionId, BuildLineData(session)), session.Session);
+            return;
+        }
 
         if (!ExecuteActions(session, step.Actions))
         {
@@ -883,7 +915,9 @@ public sealed class DialogueSystem : EntitySystem
         EntityUid initiator,
         EntityUid target,
         DialogueInteractableComponent component,
-        bool autoTrigger)
+        bool autoTrigger,
+        bool bypassActionBlocker = false,
+        ProtoId<DialoguePrototype>? expectedDialogue = null)
     {
         if (_sessions.ContainsKey(session))
             return false;
@@ -892,7 +926,8 @@ public sealed class DialogueSystem : EntitySystem
         {
             if (suspendedByUser.Dialogue.Target != target
                 || suspendedByUser.Dialogue.ResumeMode != DialogueResumeMode.Continue
-                || !_actionBlocker.CanInteract(initiator, target)
+                || expectedDialogue is { } expected && suspendedByUser.Dialogue.Prototype.ID != expected.Id
+                || !bypassActionBlocker && !_actionBlocker.CanInteract(initiator, target)
                 || !CanStartInteraction(initiator, target, component, popup: !autoTrigger, autoTrigger))
             {
                 return false;
@@ -902,14 +937,30 @@ public sealed class DialogueSystem : EntitySystem
             return _sessions.ContainsKey(session);
         }
 
-        if (!_actionBlocker.CanInteract(initiator, target)
+        if ((!bypassActionBlocker && !_actionBlocker.CanInteract(initiator, target))
             || !CanStartInteraction(initiator, target, component, popup: !autoTrigger, autoTrigger))
         {
             return false;
         }
 
-        if (!TryResolveInteraction(initiator, target, component, out var interaction))
+        // A server-owned cinematic names the exact script it needs. It must not
+        // depend on the NPC's normal player-facing branch selection, which may
+        // deliberately no longer contain that script after an earlier scene.
+        ResolvedDialogueInteraction interaction;
+        if (expectedDialogue is { } expectedDialogueId)
+        {
+            interaction = new ResolvedDialogueInteraction(
+                expectedDialogueId,
+                null,
+                DialogueSpeaker.Npc,
+                Array.Empty<DialogueActionPrototype>(),
+                null,
+                0f);
+        }
+        else if (!TryResolveInteraction(initiator, target, component, out interaction))
+        {
             return false;
+        }
 
         // Entry actions have no dialogue failure branch. Reject failed transactional requirements before
         // opening a session or emitting standalone chat, rather than letting a later action continue.
@@ -966,6 +1017,7 @@ public sealed class DialogueSystem : EntitySystem
             component.RequireLineOfSight,
             TimeSpan.FromSeconds(MathF.Max(component.ResumeGracePeriod, 0f)),
             prototype.Scene.AllowCancel,
+            prototype.Scene.AllowSkip,
             prototype.Scene.ResumeMode,
             prototype.InteractionMode);
         ProtectEntity(dialogue, initiator);
@@ -991,6 +1043,32 @@ public sealed class DialogueSystem : EntitySystem
         }
 
         return TryRaiseDialogueOpen(dialogue);
+    }
+
+    /// <summary>
+    /// Starts one exact server-owned dialogue for the attached player. This bypasses normal branch resolution and
+    /// the Act I action lock; target, range, line-of-sight and prototype validation remain the same as an interaction.
+    /// </summary>
+    public bool TryStartScriptedDialogue(
+        ICommonSession session,
+        EntityUid target,
+        ProtoId<DialoguePrototype> expectedDialogue)
+    {
+        if (session.AttachedEntity is not { Valid: true } initiator ||
+            !Exists(initiator) ||
+            !TryComp<DialogueInteractableComponent>(target, out var interactable))
+        {
+            return false;
+        }
+
+        return TryStartDialogue(
+            session,
+            initiator,
+            target,
+            interactable,
+            autoTrigger: false,
+            bypassActionBlocker: true,
+            expectedDialogue: expectedDialogue);
     }
 
     private bool IsResumableSuspendedSession(ICommonSession session, EntityUid target)
@@ -1032,6 +1110,7 @@ public sealed class DialogueSystem : EntitySystem
         dialogue.StepSequences.Clear();
         dialogue.StepSequences.Add(dialogue.RootSequence);
         dialogue.AllowCancel = prototype.Scene.AllowCancel;
+        dialogue.AllowSkip = prototype.Scene.AllowSkip;
         dialogue.ResumeMode = prototype.Scene.ResumeMode;
         dialogue.InteractionMode = prototype.InteractionMode;
         dialogue.Completing = false;
@@ -1068,6 +1147,14 @@ public sealed class DialogueSystem : EntitySystem
         }
 
         SetAutoAdvanceNotBefore(dialogue, step);
+
+        RaiseLocalEvent(
+            dialogue.Target,
+            new DialogueLineStartedEvent(
+                dialogue.UserId,
+                dialogue.Initiator,
+                dialogue.DialogueId.Id,
+                dialogue.RootSequence.Index));
 
         RaiseNetworkEvent(
             new DialogueOpenEvent(
@@ -1145,7 +1232,7 @@ public sealed class DialogueSystem : EntitySystem
         if (target == dialogue.Initiator
             || Deleted(target)
             || (!HasComp<HTNComponent>(target) && !HasComp<NPCSteeringComponent>(target))
-            || dialogue.ControlledMovers.Any(mover => mover.Entity == target))
+            || HasComp<DialogueMovementActiveComponent>(target))
         {
             return;
         }
@@ -1397,6 +1484,7 @@ public sealed class DialogueSystem : EntitySystem
         return new DialogueSceneData(
             scene.HideHud,
             scene.AllowCancel,
+            scene.AllowSkip,
             scene.DimOpacity,
             scene.WindowWidth,
             scene.WindowMinHeight,
@@ -1915,6 +2003,23 @@ public sealed class DialogueSystem : EntitySystem
 
                 return true;
             }
+            case DialogueActionType.OpenMerchant:
+            {
+                if (dialogue == null || Deleted(initiator) || Deleted(target))
+                    return false;
+
+                if (!TryComp(target, out MerchantComponent? merchant))
+                    return false;
+
+                // The dialogue input lock rejects BUI open requests. Release this
+                // player's dialogue lease before handing them to the merchant UI.
+                dialogue.Closing = true;
+                dialogue.AbortRequested = true;
+                CloseSession(dialogue, sendCloseEvent: true);
+
+                _merchant.OpenUi(initiator, target, merchant);
+                return true;
+            }
             case DialogueActionType.SetFlag:
             {
                 if (string.IsNullOrWhiteSpace(action.Flag))
@@ -1975,6 +2080,9 @@ public sealed class DialogueSystem : EntitySystem
                     return false;
                 }
 
+                if (IsMovementControlledByAnotherDialogue(dialogue, mover.Value))
+                    return false;
+
                 EnsureDialogueMovement(dialogue, mover.Value);
 
                 var steering = _npcSteering.Register(
@@ -1994,7 +2102,26 @@ public sealed class DialogueSystem : EntitySystem
                 if (speaker == null || Deleted(speaker.Value))
                     return false;
 
-                _npcSteering.Unregister(speaker.Value);
+                if (dialogue != null && IsMovementControlledByAnotherDialogue(dialogue, speaker.Value))
+                    return false;
+
+                StopDialogueMovement(speaker.Value);
+
+                if (dialogue != null)
+                {
+                    for (var i = dialogue.ControlledMovers.Count - 1; i >= 0; i--)
+                    {
+                        var controlled = dialogue.ControlledMovers[i];
+                        if (controlled.Entity != speaker.Value)
+                            continue;
+
+                        if (!controlled.HadMarker)
+                            RemComp<DialogueMovementActiveComponent>(speaker.Value);
+
+                        dialogue.ControlledMovers.RemoveAt(i);
+                    }
+                }
+
                 return true;
             }
             case DialogueActionType.SleepSpeakerAi:
@@ -2016,6 +2143,10 @@ public sealed class DialogueSystem : EntitySystem
                     return false;
 
                 _npc.WakeNPC(speaker.Value, htn);
+                // An explicit wake action is authoritative for the rest of the
+                // scene; do not put the NPC back to sleep when the last session
+                // releases its lease.
+                SuppressNpcWakeOnRelease(dialogue, speaker.Value);
                 return true;
             }
             case DialogueActionType.RotateSpeakerRelative:
@@ -2069,6 +2200,23 @@ public sealed class DialogueSystem : EntitySystem
         var hadMarker = HasComp<DialogueMovementActiveComponent>(uid);
         EnsureComp<DialogueMovementActiveComponent>(uid);
         dialogue.ControlledMovers.Add(new ControlledDialogueMovement(uid, hadMarker));
+    }
+
+    private bool IsMovementControlledByAnotherDialogue(ActiveDialogueSession dialogue, EntityUid uid)
+    {
+        return _sessions.Values.Any(active =>
+            !ReferenceEquals(active, dialogue) && active.ControlledMovers.Any(controlled => controlled.Entity == uid));
+    }
+
+    private void StopDialogueMovement(EntityUid uid)
+    {
+        _npcSteering.Unregister(uid);
+
+        if (TryComp<PhysicsComponent>(uid, out var physics))
+        {
+            _physics.SetLinearVelocity(uid, Vector2.Zero, body: physics);
+            _physics.SetAngularVelocity(uid, 0f, body: physics);
+        }
     }
 
     private EntityUid? ResolveSpeakerEntity(ActiveDialogueSession dialogue, DialogueSpeaker speaker)
@@ -2272,6 +2420,7 @@ public sealed class DialogueSystem : EntitySystem
         }
 
         UpdateTargetConversationState(dialogue.Target);
+        QueueAutoTriggerRefresh();
 
         return true;
     }
@@ -2305,6 +2454,21 @@ public sealed class DialogueSystem : EntitySystem
         targetSessions.Remove(suspended);
         if (targetSessions.Count == 0)
             _suspendedSessionsByTarget.Remove(suspended.Dialogue.Target);
+
+        QueueAutoTriggerRefresh();
+    }
+
+    private void QueueAutoTriggerRefresh()
+    {
+        if (_shuttingDown || _maxAutoTriggerRange <= 0f || _autoTriggerRefreshQueued)
+            return;
+
+        _autoTriggerRefreshQueued = true;
+        _taskManager.RunOnMainThread(() =>
+        {
+            _autoTriggerRefreshQueued = false;
+            UpdateAutoTriggersForAllPlayers();
+        });
     }
 
     private void DiscardSuspendedSession(SuspendedDialogueSession suspended)
@@ -2421,6 +2585,7 @@ public sealed class DialogueSystem : EntitySystem
         var memory = GetOrCreateDialogueMemory(dialogue.Target, dialogue.UserId);
         memory.CompletedDialogues.Add(dialogue.Prototype.ID);
         SavePersistentMemory(dialogue.Target, dialogue.UserId);
+        RaiseLocalEvent(dialogue.Target, new DialogueCompletedEvent(dialogue.UserId, dialogue.Initiator, dialogue.Prototype.ID));
         CloseSession(dialogue, sendCloseEvent);
     }
 
@@ -2443,7 +2608,10 @@ public sealed class DialogueSystem : EntitySystem
             if (Deleted(controlled.Entity))
                 continue;
 
-            _npcSteering.Unregister(controlled.Entity);
+            if (IsMovementControlledByAnotherDialogue(dialogue, controlled.Entity))
+                continue;
+
+            StopDialogueMovement(controlled.Entity);
 
             if (!controlled.HadMarker)
                 RemComp<DialogueMovementActiveComponent>(controlled.Entity);
@@ -2524,6 +2692,15 @@ public sealed class DialogueSystem : EntitySystem
         }
 
         SetAutoAdvanceNotBefore(dialogue, step);
+
+        RaiseLocalEvent(
+            dialogue.Target,
+            new DialogueLineStartedEvent(
+                dialogue.UserId,
+                dialogue.Initiator,
+                dialogue.DialogueId.Id,
+                dialogue.RootSequence.Index));
+
         RaiseNetworkEvent(new DialogueLineUpdateEvent(dialogue.SessionId, BuildLineData(dialogue)), dialogue.Session);
     }
 
@@ -2633,6 +2810,7 @@ public sealed class DialogueSystem : EntitySystem
         public bool RequireLineOfSight { get; }
         public TimeSpan ResumeGracePeriod { get; }
         public bool AllowCancel { get; set; }
+        public bool AllowSkip { get; set; }
         public DialogueResumeMode ResumeMode { get; set; }
         public DialogueInteractionMode InteractionMode { get; set; }
         public ActiveDialogueSequence RootSequence { get; set; }
@@ -2655,6 +2833,7 @@ public sealed class DialogueSystem : EntitySystem
             bool requireLineOfSight,
             TimeSpan resumeGracePeriod,
             bool allowCancel,
+            bool allowSkip,
             DialogueResumeMode resumeMode,
             DialogueInteractionMode interactionMode)
         {
@@ -2670,6 +2849,7 @@ public sealed class DialogueSystem : EntitySystem
             RequireLineOfSight = requireLineOfSight;
             ResumeGracePeriod = resumeGracePeriod;
             AllowCancel = allowCancel;
+            AllowSkip = allowSkip;
             ResumeMode = resumeMode;
             InteractionMode = interactionMode;
             RootSequence = new ActiveDialogueSequence(prototype.Steps);

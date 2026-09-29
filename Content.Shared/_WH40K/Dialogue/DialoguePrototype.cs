@@ -53,6 +53,13 @@ public sealed partial class DialogueScenePrototype
     [DataField("allowCancel")]
     public bool AllowCancel = true;
 
+    /// <summary>
+    /// Whether the player may reveal or advance lines manually. Timed cinematic scenes can disable this
+    /// while keeping their automatic transitions enabled.
+    /// </summary>
+    [DataField("allowSkip")]
+    public bool AllowSkip = true;
+
     [DataField("resumeMode")]
     public DialogueResumeMode ResumeMode = DialogueResumeMode.Continue;
 
@@ -524,7 +531,8 @@ public enum DialogueActionType : byte
     DebitBankAccount,
     CreditBankAccount,
     AddAccess,
-    RemoveAccess
+    RemoveAccess,
+    OpenMerchant
 }
 
 public enum DialogueConditionType : byte

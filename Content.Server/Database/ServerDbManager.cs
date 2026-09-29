@@ -64,6 +64,9 @@ namespace Content.Server.Database
             NetUserId userId,
             HumanoidCharacterProfile profile,
             CancellationToken cancel = default);
+        Task<Wh40kPlayerProgressSnapshot> CompleteWh40kAct1Async(
+            NetUserId userId,
+            CancellationToken cancel = default);
         Task<Wh40kAccountRpgRecord?> GetWh40kAccountRpgAsync(
             NetUserId userId,
             CancellationToken cancel = default);
@@ -771,6 +774,14 @@ namespace Content.Server.Database
         {
             DbWriteOpsMetric.Inc();
             return RunDbCommand(() => _db.CompleteWh40kOnboardingAsync(userId, profile, cancel));
+        }
+
+        public Task<Wh40kPlayerProgressSnapshot> CompleteWh40kAct1Async(
+            NetUserId userId,
+            CancellationToken cancel = default)
+        {
+            DbWriteOpsMetric.Inc();
+            return RunDbCommand(() => _db.CompleteWh40kAct1Async(userId, cancel));
         }
 
         public Task<Wh40kAccountRpgRecord?> GetWh40kAccountRpgAsync(

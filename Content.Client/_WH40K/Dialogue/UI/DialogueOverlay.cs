@@ -988,6 +988,15 @@ public sealed class DialogueOverlay : LayoutContainer
         public void SetPresentation(Color tint)
         {
             _targetTint = tint;
+
+            // Apply speaker dimming immediately once the entrance animation has
+            // completed. Otherwise a new line briefly renders the previous
+            // tint before the presentation lerp catches up.
+            if (_entranceElapsed >= EntranceDuration && _entranceDelay <= 0f)
+            {
+                _currentTint = tint;
+                ModulateSelfOverride = tint;
+            }
         }
 
         public void PlayEntrance(float delay)

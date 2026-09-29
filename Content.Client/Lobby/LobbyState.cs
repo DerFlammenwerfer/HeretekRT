@@ -1,4 +1,5 @@
 using Content.Client._NF.LateJoin;
+using Content.Client._WH40K.Act1;
 using Content.Client._WH40K.CharacterCreation;
 using Content.Client._WH40K.DeathTransition;
 using Content.Client.Administration.Managers;
@@ -73,6 +74,9 @@ namespace Content.Client.Lobby
 
             Lobby = (LobbyGui) _userInterfaceManager.ActiveScreen;
 
+            // The server can begin Act I while the player is still on this screen.
+            // Initialize the presentation listener now so that initial fade is never missed.
+            _ = _userInterfaceManager.GetUIController<Act1ProloguePresentationController>();
             _chatController = _userInterfaceManager.GetUIController<ChatUIController>();
             _gameTicker = _entityManager.System<ClientGameTicker>();
             _contentAudioSystem = _entityManager.System<ContentAudioSystem>();
@@ -213,6 +217,9 @@ namespace Content.Client.Lobby
                 return;
             }
 
+            if (TryJoinAct1())
+                return;
+
             if (_pickerWindow is { IsOpen: true })
             {
                 _pickerWindow.Close();
@@ -246,7 +253,10 @@ namespace Content.Client.Lobby
 
                 // A profile completed during a running round follows the same late-join route as an existing profile.
                 if (_gameTicker.IsGameStarted)
-                    OpenLateJoinPicker();
+                {
+                    if (!TryJoinAct1())
+                        OpenLateJoinPicker();
+                }
 
                 return;
             }
@@ -271,6 +281,19 @@ namespace Content.Client.Lobby
             _pickerWindow ??= new PickerWindow();
             if (!_pickerWindow.IsOpen)
                 _pickerWindow.OpenCentered();
+        }
+
+        private bool TryJoinAct1()
+        {
+            var progress = _preferencesManager.Wh40kProgress;
+            if (progress.ActStage != Wh40kActStage.Act1InProgress ||
+                progress.OnboardingStatus != Wh40kOnboardingStatus.CharacterCreated)
+                return false;
+
+            _pickerWindow?.Close();
+            _userInterfaceManager.GetUIController<Act1ProloguePresentationController>().BeginLobbyTransition();
+            _consoleHost.ExecuteCommand("wh40kact1join");
+            return true;
         }
 
         public override void FrameUpdate(FrameEventArgs e)
